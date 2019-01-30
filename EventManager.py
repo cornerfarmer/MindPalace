@@ -66,8 +66,8 @@ class EventManager:
         event = ServerSentEvent(event_type, data, parent_data)
         self._user_by_id(user_id)["queue"].put(event)
 
-    def unsubscribe(self, subscription):
-        self.subscriptions.remove(subscription)
+    def unsubscribe(self, user_id):
+        self.subscriptions.remove(self._user_by_id(user_id))
 
     def log(self, message, short="", level=logging.INFO):
         #self.logger.log(message, level)

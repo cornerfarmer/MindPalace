@@ -23,9 +23,22 @@ class Repository:
             con.execute("CREATE TABLE node_connections (parent char(36), child char(36), PRIMARY KEY (parent, child))")
             con.execute('INSERT INTO nodes VALUES (?, ?)', (god_node_uuid, ""))
 
-    def add_node(self, uuid, data):
+    def add_node(self, uuid, parent_uuid, data):
         with self.con() as con:
             con.execute('INSERT INTO nodes VALUES (?, ?)', (uuid,) + tuple([data[key] for key in fields]))
+            con.execute('INSERT INTO node_connections VALUES (?, ?)', (parent_uuid, uuid))
+
+    def update_node(self, uuid, data):
+        with self.con() as con:
+            set_rule = ""
+            for key in fields:
+                set_rule += key + "=?,"
+            con.execute('UPDATE nodes SET ' + set_rule[:-1] + ' WHERE id=?', tuple([data[key] for key in fields]) + (uuid,))
+
+    def add_connection(self, parent_uuid, child_uuid):
+        with self.con() as con:
+            con.execute('INSERT INTO node_connections VALUES (?, ?)', (parent_uuid, child_uuid))
+
 
     def get_node(self, uuid):
         with self.con() as con:
