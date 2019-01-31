@@ -3,14 +3,17 @@ import ReconnectingEventSource from "reconnecting-eventsource";
 import MindMap from "./MindMap";
 import EditBar from "./EditBar";
 
+export const Command = Object.freeze({"UPDATE":1, "DELETE":2, "CREATE":3});
+
 class App extends React.Component {
+
     constructor(props) {
         super(props);
         this.state = {
             nodes: {}
         };
 
-        this.onNodeChange = this.onNodeChange.bind(this);
+        this.onSendCommand = this.onSendCommand.bind(this);
 
         function uuidv4() {
           return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -19,14 +22,35 @@ class App extends React.Component {
           });
         }
 
-        this.evtSource = new ReconnectingEventSource("/update/" + uuidv4());
+        this.user_id = uuidv4();
+        this.evtSource = new ReconnectingEventSource("/update/" + this.user_id);
 
         var app = this;
         this.evtSource.addEventListener("NODE_CHANGED", function (e) {
             const newNode = JSON.parse(e.data);
-            console.log(newNode);
 
-            const nodes = Object.assign({}, app.state.nodes, {[newNode.id]: newNode});
+            const nodes = Object.assign({}, app.state.nodes);
+
+            if (newNode.id in nodes) {
+                nodes[newNode.id].content = newNode.content;
+                nodes[newNode.id].parents = newNode.parents; //TODO: Diff
+            } else {
+                nodes[newNode.id] = newNode;
+                nodes[newNode.id].children = [];
+            }
+
+            var parent_nodes = [];
+            for (const parent of newNode.parents) {
+                if (!(parent in nodes))
+                    nodes[parent] = {id: parent, children: [], content: ""};
+                parent_nodes.push(nodes[parent])
+            }
+            nodes[newNode.id].parents = parent_nodes;
+
+            for (const parent of newNode.parents) {
+                if (!(newNode.id in parent.children))
+                    parent.children.push(newNode);
+            }
 
             app.setState({
                 nodes: nodes
@@ -36,16 +60,30 @@ class App extends React.Component {
 
     }
 
-    onNodeChange(newNode) {
+    onSendCommand(command, args) {
         var data = new FormData();
 
-        data.append("data", JSON.stringify(newNode));
+        if (command === Command.UPDATE) {
+            let node = args;
+            data.append("data", JSON.stringify(node));
 
-        fetch("/update_node/" + newNode.id,
-            {
-                method: "POST",
-                body: data
-            })
+            fetch("/update_node/" + node.id,
+                {
+                    method: "POST",
+                    body: data
+                })
+                .then(res => res.json())
+                .then(
+                    (result) => {
+
+                    },
+                    (error) => {
+
+                    }
+                );
+        } else if (command === Command.CREATE) {
+            let parent_id = args;
+            fetch("/add_node/" + this.user_id + "/" + parent_id)
             .then(res => res.json())
             .then(
                 (result) => {
@@ -55,6 +93,7 @@ class App extends React.Component {
 
                 }
             );
+        }
     }
 
     render() {
@@ -66,7 +105,7 @@ class App extends React.Component {
                             <MindMap nodes={this.state.nodes}/>
                         </div>
                         <div className="col-sm-4">
-                            <EditBar nodes={this.state.nodes} onNodeChange={this.onNodeChange}/>
+                            <EditBar nodes={this.state.nodes} onSendCommand={this.onSendCommand}/>
                         </div>
                     </div>
                 </div>
@@ -74,5 +113,7 @@ class App extends React.Component {
         );
     }
 }
+
+App.Command = Command;
 
 export default App;

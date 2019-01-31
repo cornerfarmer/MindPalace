@@ -47,7 +47,7 @@ def run():
 
     @app.route('/add_node/<string:user_id>/<string:parent_id>/')
     def add_node(user_id, parent_id):
-        controller.add_node(user_id, parent_id, request.args.to_dict())
+        controller.add_node(user_id, parent_id)
         return ""
 
     @app.route('/update_node/<string:node_id>', methods=['POST'])

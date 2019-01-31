@@ -1,5 +1,6 @@
 import React from 'react';
 import * as d3 from "d3";
+import {Command} from "./App";
 
 class EditNode extends React.Component {
     constructor(props) {
@@ -10,6 +11,7 @@ class EditNode extends React.Component {
         this.contentField = React.createRef();
 
         this.updateContent = this.updateContent.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
     }
 
     componentDidMount() {
@@ -23,16 +25,23 @@ class EditNode extends React.Component {
     updateContent(evt) {
         const newNode = Object.assign(this.props.node, {content: evt.target.value});
 
-        this.props.onNodeChange(newNode);
+        this.props.onSendCommand(Command.UPDATE, newNode);
         this.setState({
             content: evt.target.value
         });
     }
 
+    onKeyDown(e) {
+        if (e.keyCode === 13) {
+            e.preventDefault();
+            this.props.onSendCommand(Command.CREATE, this.props.level === 0 ? this.props.node.id : this.props.node.parent.id);
+        }
+    }
+
     render() {
         return (
              <div>
-                 <input ref={this.contentField} type="text" name="content" value={this.state.content} onChange={evt => this.updateContent(evt)} />
+                 <input onKeyDown={this.onKeyDown} ref={this.contentField} type="text" name="content" value={this.state.content} onChange={evt => this.updateContent(evt)} />
              </div>
         );
     }

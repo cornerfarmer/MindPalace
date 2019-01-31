@@ -14,12 +14,22 @@ class MindMap extends React.Component {
     componentDidMount() {
     }
 
+    addChildNodes(mapNodes, node, x=0, y=0) {
+        mapNodes.push({node: node, x: 0, y: y});
+
+        var child_x = x;
+        for (const child of node.children) {
+            this.addChildNodes(mapNodes, child, child_x, y + 30);
+            child_x += 50;
+        }
+    }
+
     componentDidUpdate(prevProps, prevState) {
         if (this.state.focusedNode in this.props.nodes) {
             var mapNodes = [];
             const focusedNode = this.props.nodes[this.state.focusedNode];
 
-            mapNodes.push({node: focusedNode, x: 0, y: 0});
+            this.addChildNodes(mapNodes, focusedNode);
 
             var nodeElements = d3.select(this.nodes.current)
                 .selectAll("div")

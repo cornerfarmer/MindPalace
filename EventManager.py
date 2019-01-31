@@ -82,4 +82,9 @@ class EventManager:
         return None
 
     def watch(self, user_id, node_id):
-        self._user_by_id(user_id)["watch_list"].add(node_id)
+        user = self._user_by_id(user_id)
+        if node_id in user["watch_list"]:
+            return False
+        else:
+            user["watch_list"].add(node_id)
+            return True

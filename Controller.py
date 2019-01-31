@@ -9,19 +9,29 @@ class Controller:
 
     def load_node(self, user_id, node_id):
         if node_id is None:
-            data = self.repository.get_god_node()
-        else:
-            data = self.repository.get_node(node_id)
+            node_id = self.repository.get_god_node_uuid()
 
-        self.event_manager.watch(user_id, data["id"])
-        self.event_manager.throw_for_client(user_id, EventType.NODE_CHANGED, data)
+        self.watch_node(user_id, node_id)
+
+        children = self.repository.get_children_ids(node_id)
+        for child_id in children:
+            self.watch_node(user_id, child_id)
+
+        parents = self.repository.get_parent_ids(node_id)
+        for parent_id in parents:
+            self.watch_node(user_id, parent_id)
+
+    def watch_node(self, user_id, node_id):
+        if self.event_manager.watch(user_id, node_id):
+            data = self.repository.get_node(node_id)
+            self.event_manager.throw_for_client(user_id, EventType.NODE_CHANGED, data)
 
     def update_new_client(self, user_id):
         self.load_node(user_id, None)
 
-    def add_node(self, user_id, parent_id, data):
+    def add_node(self, user_id, parent_id):
         node_id = str(uuid.uuid4())
-        self.repository.add_node(node_id, parent_id, data)
+        self.repository.add_node(node_id, parent_id)
 
         self.load_node(user_id, node_id)
 

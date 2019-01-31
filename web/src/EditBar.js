@@ -19,7 +19,7 @@ class EditBar extends React.Component {
             var nodeListing = [];
             const focusedNode = this.props.nodes[this.state.focusedNode];
 
-            nodeListing.push(focusedNode);
+            nodeListing.push({node: focusedNode, level: 0});
             this.setState({
                 nodeListing: nodeListing
             });
@@ -29,11 +29,12 @@ class EditBar extends React.Component {
     render() {
         return (
              <div>
-                 {this.state.nodeListing.map((node) => (
+                 {this.state.nodeListing.map((element) => (
                      <EditNode
-                         key={node.id}
-                         node={node}
-                         onNodeChange={this.props.onNodeChange}
+                         key={element.node.id}
+                         node={element.node}
+                         level={element.level}
+                         onSendCommand={this.props.onSendCommand}
                         />
                  ))}
              </div>
