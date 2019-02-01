@@ -14,12 +14,22 @@ class EditBar extends React.Component {
     componentDidMount() {
     }
 
+    addNodesRecursive(nodeListing, node, level, maxLevels) {
+        nodeListing.push({node: node, level: level});
+
+        if (level < maxLevels) {
+            for (const child of node.children) {
+                this.addNodesRecursive(nodeListing, child, level + 1, maxLevels);
+            }
+        }
+    }
+
     componentDidUpdate(prevProps, prevState) {
         if (prevProps.nodes !== this.props.nodes && this.state.focusedNode in this.props.nodes) {
             var nodeListing = [];
             const focusedNode = this.props.nodes[this.state.focusedNode];
+            this.addNodesRecursive(nodeListing, focusedNode, 0, 2);
 
-            nodeListing.push({node: focusedNode, level: 0});
             this.setState({
                 nodeListing: nodeListing
             });

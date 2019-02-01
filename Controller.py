@@ -37,4 +37,8 @@ class Controller:
 
     def update_node(self, node_id, data):
         self.repository.update_node(node_id, data)
+        self.node_changed(node_id)
+
+    def node_changed(self, node_id):
+        data = self.repository.get_node(node_id)
         self.event_manager.throw(EventType.NODE_CHANGED, data)

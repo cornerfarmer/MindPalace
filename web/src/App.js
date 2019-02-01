@@ -27,28 +27,32 @@ class App extends React.Component {
 
         var app = this;
         this.evtSource.addEventListener("NODE_CHANGED", function (e) {
-            const newNode = JSON.parse(e.data);
+            const newNodeData = JSON.parse(e.data);
 
             const nodes = Object.assign({}, app.state.nodes);
 
-            if (newNode.id in nodes) {
-                nodes[newNode.id].content = newNode.content;
-                nodes[newNode.id].parents = newNode.parents; //TODO: Diff
+            if (newNodeData.id in nodes) {
+                nodes[newNodeData.id].content = newNodeData.content;
+                nodes[newNodeData.id].parents = newNodeData.parents; //TODO: Diff
             } else {
-                nodes[newNode.id] = newNode;
-                nodes[newNode.id].children = [];
+                nodes[newNodeData.id] = newNodeData;
+                nodes[newNodeData.id].children = [];
             }
+            const newNode = nodes[newNodeData.id];
 
             var parent_nodes = [];
             for (const parent of newNode.parents) {
                 if (!(parent in nodes))
                     nodes[parent] = {id: parent, children: [], content: ""};
-                parent_nodes.push(nodes[parent])
+
+                parent_nodes.push(nodes[parent]);
+                if (parent === newNodeData.main_parent)
+                    newNode.main_parent = nodes[parent];
             }
-            nodes[newNode.id].parents = parent_nodes;
+            newNode.parents = parent_nodes;
 
             for (const parent of newNode.parents) {
-                if (!(newNode.id in parent.children))
+                if (!(parent.children.includes(newNode)))
                     parent.children.push(newNode);
             }
 

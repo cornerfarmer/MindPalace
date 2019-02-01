@@ -23,7 +23,7 @@ class EditNode extends React.Component {
     }
 
     updateContent(evt) {
-        const newNode = Object.assign(this.props.node, {content: evt.target.value});
+        const newNode = {id: this.props.node.id, content: evt.target.value};
 
         this.props.onSendCommand(Command.UPDATE, newNode);
         this.setState({
@@ -34,7 +34,7 @@ class EditNode extends React.Component {
     onKeyDown(e) {
         if (e.keyCode === 13) {
             e.preventDefault();
-            this.props.onSendCommand(Command.CREATE, this.props.level === 0 ? this.props.node.id : this.props.node.parent.id);
+            this.props.onSendCommand(Command.CREATE, this.props.level === 0 ? this.props.node.id : this.props.node.main_parent.id);
         }
     }
 

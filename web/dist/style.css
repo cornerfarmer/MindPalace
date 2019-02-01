@@ -1,0 +1,23 @@
+html,
+body,
+#root,
+#root > #page,
+#root > #page > .container,
+#root > #page > .container >.row,
+#root > #page > .container >.row > div {
+    height: 100%;
+}
+
+.mind-map,
+.mind-map svg,
+.mind-map .nodes {
+    height: 100%;
+    width: 100%;
+}
+
+.mind-map .nodes .node {
+    position: absolute;
+    border: 1px solid black;
+    text-align: center;
+    padding: 5px;
+}
