@@ -25,6 +25,8 @@ class ServerSentEvent(object):
         data_client = {}
         if event_type in [EventType.NODE_CHANGED]:
             data_client = data.copy()
+        elif event_type in [EventType.NODE_DELETED]:
+            data_client = data.copy()
         else:
             raise LookupError("Given data type not supported: " + str(data))
 
@@ -42,6 +44,7 @@ class ServerSentEvent(object):
 
 class EventType(Enum):
     NODE_CHANGED = "NODE_CHANGED"
+    NODE_DELETED = "NODE_DELETED"
 
 class EventManager:
     def __init__(self):

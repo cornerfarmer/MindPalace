@@ -1,7 +1,8 @@
 import React from 'react';
 import * as d3 from "d3";
+import {Command} from "./App";
 
-const layer_offset = 50;
+const layer_offset = 100;
 const space_between = 50;
 const node_width = 70;
 
@@ -9,7 +10,6 @@ class MindMap extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            focusedNode: "00000000-0000-0000-0000-000000000000"
         };
         this.svg = React.createRef();
         this.nodes = React.createRef();
@@ -24,26 +24,31 @@ class MindMap extends React.Component {
       }
 
 
-    addChildNodes(mapNodes, parentMapNode, except_node=null) {
+    addChildNodes(mapNodes, mapConnections, parentMapNode, except_node=null) {
 
         var child_x = parentMapNode.x - this.calc_x_offset(parentMapNode.node.children.length - 1) / 2;
-        for (const child of parentMapNode.node.children) {
+        for (const child_element of parentMapNode.node.children) {
+            const child = child_element.node;
             if (except_node !== child) {
-                mapNodes.push({node: child, x: child_x, y: parentMapNode.y + layer_offset});
+                let childMapNode = {node: child, x: child_x, y: parentMapNode.y + layer_offset};
+                mapNodes.push(childMapNode);
+                mapConnections.push({parent: parentMapNode, child: childMapNode});
             }
             child_x += space_between + node_width;
         }
     }
 
-    addParentNodes(mapNodes, node, prevMapNode) {
-        var parent = node.main_parent;
+    addParentNodes(mapNodes, mapConnections, childMapNode) {
+        var parent = childMapNode.node.main_parent;
         if (parent !== null) {
-            var x_offset = this.calc_x_offset(parent.children.indexOf(node)) - this.calc_x_offset(parent.children.length) / 2;
+            var x_offset = this.calc_x_offset(parent.children.findIndex(e => e.node === childMapNode.node)) - this.calc_x_offset(parent.children.length - 1) / 2;
 
-            mapNodes.push({node: parent, x: prevMapNode.x - x_offset, y: prevMapNode.y - layer_offset});
+            var parentMapNode = {node: parent, x: childMapNode.x - x_offset, y: childMapNode.y - layer_offset};
+            mapNodes.push(parentMapNode);
+            mapConnections.push({parent: parentMapNode, child: childMapNode});
 
-            this.addParentNodes(mapNodes, parent, mapNodes[mapNodes.length - 1]);
-            this.addChildNodes(mapNodes, parent, node);
+            this.addParentNodes(mapNodes, mapConnections, parentMapNode);
+            this.addChildNodes(mapNodes, mapConnections, parentMapNode, childMapNode.node);
         }
     }
 
@@ -52,31 +57,75 @@ class MindMap extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.state.focusedNode in this.props.nodes) {
-          this.rebuildNodes();
+        if (this.props.focusedNode in this.props.nodes) {
+            this.rebuildNodes();
         }
     }
 
     rebuildNodes() {
         var mapNodes = [];
+        var mapConnections = [];
         var nodesContainer = d3.select(this.nodes.current);
-        const focusedNode = this.props.nodes[this.state.focusedNode];
+        const focusedNode = this.props.nodes[this.props.focusedNode];
 
         mapNodes.push({node: focusedNode, x: nodesContainer.node().getBoundingClientRect().width / 2, y: nodesContainer.node().getBoundingClientRect().height / 2});
-        this.addParentNodes(mapNodes, focusedNode, mapNodes[0]);
-        this.addChildNodes(mapNodes, mapNodes[0]);
+        this.addParentNodes(mapNodes, mapConnections, mapNodes[0]);
+        this.addChildNodes(mapNodes, mapConnections, mapNodes[0]);
 
+        var t = d3.transition();
         var nodeElements = nodesContainer
             .selectAll("div")
-            .data(mapNodes);
+            .data(mapNodes, d => d.node.id);
 
         nodeElements.exit().remove();
         nodeElements.enter().append("div")
             .attr("class", "node")
-            .merge(nodeElements)
+            .on("click", d => this.props.focusNode(d.node.id))
             .text(d => d.node.content)
             .style("left", d => d.x + "px")
             .style("top", d => d.y + "px");
+
+        nodeElements
+            .transition(t)
+            .duration(500)
+            .text(d => d.node.content)
+            .style("left", d => d.x + "px")
+            .style("top", d => d.y + "px");
+
+        var connectionElements = d3.select(this.svg.current)
+            .selectAll("path")
+            .data(mapConnections, d => d.parent.node.id + "-" + d.child.node.id);
+
+        connectionElements.exit().remove();
+
+        var newConnectionElements = connectionElements.enter()
+            .append("path")
+            .attr("fill", "none")
+            .attr("stroke", "#555")
+            .attr("stroke-width", 1.5)
+            .attr("d", d3.linkVertical()
+                    .source(d => d.parent)
+                    .target(d => d.child)
+                    .x(d => d.x)
+                    .y(d => d.y));
+
+        connectionElements
+            .transition()
+            .duration(500)
+            .attr("d", d3.linkVertical()
+                    .source(d => d.parent)
+                    .target(d => d.child)
+                    .x(d => d.x)
+                    .y(d => d.y));
+
+        /*newConnectionElements
+            .each(function(d) { d.totalLength = this.getTotalLength() })
+            .attr("stroke-dasharray", d => d.totalLength + " " + d.totalLength)
+            .attr("stroke-dashoffset", d => d.totalLength)
+            .transition("dash")
+            .duration(2000)
+            .attr("stroke-dashoffset", 0);*/
+
     }
 
     render() {

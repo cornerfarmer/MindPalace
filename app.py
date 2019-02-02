@@ -45,14 +45,28 @@ def run():
     def load_node(user_id, node_id):
         return jsonify(controller.load_node(user_id, node_id))
 
-    @app.route('/add_node/<string:user_id>/<string:parent_id>/')
-    def add_node(user_id, parent_id):
-        controller.add_node(user_id, parent_id)
-        return ""
+    @app.route('/add_node/<string:user_id>/<string:parent_id>')
+    @app.route('/add_node/<string:user_id>/<string:parent_id>/<int:sorting>')
+    def add_node(user_id, parent_id, sorting=-1):
+        node_id = controller.add_node(user_id, parent_id, sorting)
+        return jsonify({'id': node_id})
 
     @app.route('/update_node/<string:node_id>', methods=['POST'])
     def update_node(node_id):
         controller.update_node(node_id, json.loads(request.form.get('data')))
+
+        return ""
+
+    @app.route('/delete_node/<string:node_id>')
+    def delete_node(node_id):
+        controller.delete_node(node_id)
+
+        return ""
+
+    @app.route('/move_node/<string:node_id>/<string:old_parent>/<string:new_parent>')
+    @app.route('/move_node/<string:node_id>/<string:old_parent>/<string:new_parent>/<int:sorting>')
+    def move_node(node_id, old_parent, new_parent, sorting=-1):
+        controller.move_node(node_id, old_parent, new_parent, sorting)
 
         return ""
 
