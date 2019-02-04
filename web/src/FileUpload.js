@@ -28,11 +28,14 @@ class FileUpload extends React.Component {
         if (this.state.uploading) {
             content = <i className="fas fa-spinner"></i>
         } else {
-            content = <input type='file' id='single' onChange={this.upload} />;
+            content = <span>
+                <input type='file' name={"file-" + this.props.node_id} id={"file-" + this.props.node_id} onChange={this.upload} />
+                <label htmlFor={"file-" + this.props.node_id}>Upload a file</label>
+            </span>;
         }
 
         return (
-             <div>
+             <div className="file-upload">
                  {content}
              </div>
         );

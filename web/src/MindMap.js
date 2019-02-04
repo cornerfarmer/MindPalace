@@ -2,27 +2,30 @@ import React from 'react';
 import * as d3 from "d3";
 import {Command} from "./App";
 import File from "./File";
+import MindMapNode from "./MindMapNode";
 
-const layer_offset = 100;
+const layer_offset = 200;
 const space_between = 50;
-const node_width = 70;
+const node_width = 150;
 
 class MindMap extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            enlarged_id: null
         };
         this.svg = React.createRef();
         this.nodes = React.createRef();
+        this.enlarge = this.enlarge.bind(this);
     }
 
     componentDidMount() {
         window.addEventListener("resize", this.rebuildNodes.bind(this));
     }
 
-      componentWillUnmount() {
-        window.removeEventListener("resize", this.rebuildNodes.bind(this));
-      }
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.rebuildNodes.bind(this));
+  }
 
 
     addChildNodes(mapNodes, mapConnections, parentMapNode, except_node=null) {
@@ -63,11 +66,14 @@ class MindMap extends React.Component {
         }
     }
 
+    enlarge(node_id) {
+        this.setState({
+            enlarged_id: node_id
+        });
+    }
+
     renderNode(node) {
-        return <div>
-            {node.file && <File file={node.file}/>}
-            {node.content}
-        </div>
+        return <MindMapNode node={node} enlarged_id={this.state.enlarged_id} enlarge={this.enlarge} />
     }
 
     rebuildNodes() {
@@ -88,9 +94,9 @@ class MindMap extends React.Component {
         let self = this;
         nodeElements.exit().remove();
         nodeElements.enter().append("div")
-            .attr("class", "node")
+            .attr("class", d => (d.node.id === this.state.enlarged_id ? "node node-enlarged" : "node"))
             .on("click", function(d) {
-                if (d3.event.target.nodeName === "DIV")
+                if (d3.event.target.nodeName === "DIV" || d3.event.target.nodeName === "SPAN")
                     self.props.focusNode(d.node.id);
             })
             .style("background", d => d.node.id === this.props.focusedNode ? "lightgrey" : "white")
@@ -102,6 +108,7 @@ class MindMap extends React.Component {
         nodeElements
             .transition(t)
             .duration(500)
+            .attr("class", d => (d.node.id === this.state.enlarged_id ? "node node-enlarged" : "node"))
             .style("background", d => d.node.id === this.props.focusedNode ? "lightgrey" : "white")
             .style("left", d => d.x + "px")
             .style("top", d => d.y + "px");
@@ -150,7 +157,7 @@ class MindMap extends React.Component {
         return (
              <div className="mind-map">
                  <svg ref={this.svg}></svg>
-                 <div ref={this.nodes} className="nodes">
+                 <div ref={this.nodes} className="nodes" onClick={() => this.enlarge(null)}>
                  </div>
              </div>
         );

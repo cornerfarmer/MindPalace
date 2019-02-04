@@ -25,8 +25,8 @@ class File extends React.Component {
         let mimetype = this.props.file.substr(this.props.file.indexOf("/") + 1);
 
         if (mimetype.startsWith("image/")) {
-            content = <div>
-                <img src={"/file/" + filename} height="100" onClick={this.openLightBox} />
+            content = <div className="image-container" style={{width: this.props.width, height: this.props.height}}>
+                <img src={"/file/" + filename} onClick={this.openLightBox} />
                 {this.state.lightBox && (
                   <Lightbox
                     mainSrc={"/file/" + filename}
@@ -38,11 +38,7 @@ class File extends React.Component {
             content = <a href={"/file/" + filename} target="_blank">Open file</a>
         }
 
-        return (
-            <div>
-                {content}
-            </div>
-        );
+        return content;
     }
 }
 

@@ -8,6 +8,15 @@ body,
     height: 100%;
 }
 
+#root > #page > .container > .row > .col-sm-8 {
+    overflow: hidden;
+    padding-right: 0px;
+}
+
+#root > #page > .container > .row > .col-sm-4 {
+    padding-left: 0px;
+}
+
 .mind-map,
 .mind-map svg,
 .mind-map .nodes {
@@ -29,6 +38,21 @@ body,
     transform: translateX(-50%) translateY(-50%);
     background: white;
     cursor: pointer;
+    max-width: 150px;
+}
+
+
+.mind-map .nodes .node.node-enlarged {
+    max-width: 300px;
+    z-index: 10;
+}
+
+.mind-map .nodes .node a {
+    color: #3f51b5;
+}
+
+.mind-map .nodes .node a:hover {
+    text-decoration: underline;
 }
 
 .edit-bar {
@@ -53,6 +77,35 @@ body,
     background: white;
 }
 
+.edit-bar .edit-node .content textarea {
+    height: 100px;
+    width: 100%;
+    resize: none;
+}
+
+.edit-bar .edit-node .content .file-upload input {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.edit-bar .edit-node .content .file-upload label {
+    color: white;
+    background: #3f51b5;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.edit-bar .edit-node .content .file .image-container img {
+    cursor: pointer;
+}
+
 .edit-bar .edit-node .content.level-1 {
     margin-left: 15px;
 }
@@ -61,6 +114,8 @@ body,
     margin-left: 30px;
 }
 
+
+
 .edit-bar .edit-node .toolbar {
     padding: 10px;
     background: #f2f2f2;
@@ -68,6 +123,12 @@ body,
     flex-direction: column;
 }
 
+.edit-bar .edit-node .content .file {
+    display: flex;
+    align-items: center;
+}
+
+.edit-bar .edit-node .content .action,
 .edit-bar .edit-node .toolbar .action {
     box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
     width: 28px;
@@ -120,4 +181,16 @@ body,
 
 .edit-bar .edit-node .toolbar .dropdown-menu .action:last-child {
     margin: 0;
+}
+
+
+.image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-container img {
+        max-width: 100%;
+    max-height: 100%;
 }

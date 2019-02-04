@@ -89,10 +89,10 @@ class EditNode extends React.Component {
         return (
             <div className="edit-node">
                 <div className={"content level-" + this.props.level}>
-                    <input onPaste={this.onPaste} onKeyDown={this.onKeyDown} ref={this.contentField} type="text" name="content" value={this.state.content} onChange={evt => this.updateContent(evt)}/>
+                    <textarea onPaste={this.onPaste} onKeyDown={this.onKeyDown} ref={this.contentField} name="content" value={this.state.content} onChange={evt => this.updateContent(evt)}/>
                     {this.props.node.file ?
-                        <div>
-                            <File file={this.props.node.file}/>
+                        <div className="file">
+                            <File file={this.props.node.file} width={50} height={50}/>
                             <div className="action" onClick={this.deleteFile} title="Delete file">
                                 <i className="fas fa-times"></i>
                             </div>
