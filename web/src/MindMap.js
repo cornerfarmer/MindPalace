@@ -1,6 +1,7 @@
 import React from 'react';
 import * as d3 from "d3";
 import {Command} from "./App";
+import File from "./File";
 
 const layer_offset = 100;
 const space_between = 50;
@@ -62,6 +63,13 @@ class MindMap extends React.Component {
         }
     }
 
+    renderNode(node) {
+        return <div>
+            {node.file && <File file={node.file}/>}
+            {node.content}
+        </div>
+    }
+
     rebuildNodes() {
         var mapNodes = [];
         var mapConnections = [];
@@ -74,23 +82,33 @@ class MindMap extends React.Component {
 
         var t = d3.transition();
         var nodeElements = nodesContainer
-            .selectAll("div")
+            .selectAll(".node")
             .data(mapNodes, d => d.node.id);
 
+        let self = this;
         nodeElements.exit().remove();
         nodeElements.enter().append("div")
             .attr("class", "node")
-            .on("click", d => this.props.focusNode(d.node.id))
-            .text(d => d.node.content)
+            .on("click", function(d) {
+                if (d3.event.target.nodeName === "DIV")
+                    self.props.focusNode(d.node.id);
+            })
+            .style("background", d => d.node.id === this.props.focusedNode ? "lightgrey" : "white")
             .style("left", d => d.x + "px")
-            .style("top", d => d.y + "px");
+            .style("top", d => d.y + "px")
+            .append("div")
+            .attr("id", d => "node-" + d.node.id);
 
         nodeElements
             .transition(t)
             .duration(500)
-            .text(d => d.node.content)
+            .style("background", d => d.node.id === this.props.focusedNode ? "lightgrey" : "white")
             .style("left", d => d.x + "px")
             .style("top", d => d.y + "px");
+
+        for (const mapNode of mapNodes) {
+            ReactDOM.render(this.renderNode(mapNode.node), document.getElementById('node-' + mapNode.node.id));
+        }
 
         var connectionElements = d3.select(this.svg.current)
             .selectAll("path")

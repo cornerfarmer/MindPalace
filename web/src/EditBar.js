@@ -47,7 +47,19 @@ class EditBar extends React.Component {
         var index = this.findNeighbour(node, dir);
 
         if (index < 0) {
-            this.selectParent(node);
+            if (this.props.focusedNode === node.id) {
+                if (node.main_parent !== null) {
+                    this.props.focusNode(node.main_parent.id);
+
+                    var child_index = node.main_parent.children.findIndex(e => e.node === node);
+                    if (child_index === 0)
+                        this.selectNode(node.main_parent.id);
+                    else
+                        this.selectNode(node.main_parent.children[child_index - 1].node.id);
+                }
+            } else {
+                this.selectParent(node);
+            }
         } else if (index >= this.state.nodeListing.length) {
             this.selectChild(node);
         }  else {
@@ -56,13 +68,21 @@ class EditBar extends React.Component {
     }
 
     selectParent(node) {
-        if (node.main_parent !== null)
+        if (node.main_parent !== null) {
+            if (this.props.focusedNode === node.id)
+                this.props.focusNode(node.main_parent.id);
             this.selectNode(node.main_parent.id);
+        }
     }
 
     selectChild(node) {
-        if (node.children.length > 0)
+        if (node.children.length > 0) {
+            var element_index = this.state.nodeListing.findIndex(e => e.node === node.children[0].node);
+            if (element_index === -1) {
+                this.props.focusNode(node.main_parent.id);
+            }
             this.selectNode(node.children[0].node.id);
+        }
     }
 
     selectNode(node_id) {

@@ -2,7 +2,7 @@ import sqlite3
 from flask import g
 
 god_node_uuid = "00000000-0000-0000-0000-000000000000"
-fields = ["content"]
+fields = ["content", "file"]
 
 class Repository:
     def __init__(self):
@@ -11,20 +11,20 @@ class Repository:
     def con(self):
         con = getattr(g, '_database_con', None)
         if con is None:
-            con = g._database_con = sqlite3.connect('data.db')
+            con = g._database_con = sqlite3.connect('data/database.db')
             #self._create_tables()
 
         return con
 
     def _create_tables(self):
         with self.con() as con:
-            con.execute("CREATE TABLE nodes (id char(36) primary key, content text DEFAULT '')")
+            con.execute("CREATE TABLE nodes (id char(36) primary key, content text DEFAULT '', file text DEFAULT '')")
             con.execute("CREATE TABLE node_connections (parent char(36), child char(36), is_main boolean, sorting integer, PRIMARY KEY (parent, child))")
-            con.execute('INSERT INTO nodes VALUES (?, ?)', (god_node_uuid, "Home"))
+            con.execute('INSERT INTO nodes VALUES (?, ?, ?)', (god_node_uuid, "Home", ""))
 
     def add_node(self, uuid, parent_uuid):
         with self.con() as con:
-            con.execute('INSERT INTO nodes VALUES (?, ?)', (uuid, ""))
+            con.execute('INSERT INTO nodes VALUES (?, ?, ?)', (uuid, "", ""))
             max_sorting = con.execute('SELECT max(sorting) FROM node_connections WHERE  parent=?', (parent_uuid,)).fetchone()[0]
             con.execute('INSERT INTO node_connections VALUES (?, ?, ?, ?)', (parent_uuid, uuid, True, 0 if max_sorting is None else max_sorting + 1))
 
@@ -44,10 +44,11 @@ class Repository:
 
     def update_node(self, uuid, data):
         with self.con() as con:
+            update_fields = set(fields) & set(data.keys())
             set_rule = ""
-            for key in fields:
+            for key in update_fields:
                 set_rule += key + "=?,"
-            con.execute('UPDATE nodes SET ' + set_rule[:-1] + ' WHERE id=?', tuple([data[key] for key in fields]) + (uuid,))
+            con.execute('UPDATE nodes SET ' + set_rule[:-1] + ' WHERE id=?', tuple([data[key] for key in update_fields]) + (uuid,))
 
     def delete_node(self, node_id):
         with self.con() as con:
@@ -61,15 +62,16 @@ class Repository:
 
     def get_node(self, uuid):
         with self.con() as con:
-            data = con.execute('SELECT id, content, group_concat(node_connections.parent), group_concat(node_connections.sorting), main_connections.parent FROM nodes LEFT JOIN node_connections ON node_connections.child=id LEFT JOIN node_connections AS main_connections ON main_connections.is_main = 1 AND main_connections.child=id WHERE id=? GROUP BY id', (uuid,)).fetchone()
+            data = con.execute('SELECT id, content, file, group_concat(node_connections.parent), group_concat(node_connections.sorting), main_connections.parent FROM nodes LEFT JOIN node_connections ON node_connections.child=id LEFT JOIN node_connections AS main_connections ON main_connections.is_main = 1 AND main_connections.child=id WHERE id=? GROUP BY id', (uuid,)).fetchone()
 
-            parent_ids = [] if data[2] is None else data[2].split(',')
-            parent_sortings = [] if data[3] is None else data[3].split(',')
+            parent_ids = [] if data[3] is None else data[3].split(',')
+            parent_sortings = [] if data[4] is None else data[4].split(',')
             return {
                 "id": data[0],
                 "content": data[1],
+                "file": data[2],
                 "parents":  [{'id': a, 'sorting': int(b)} for a, b in zip(parent_ids, parent_sortings)],
-                "main_parent": data[4],
+                "main_parent": data[5],
             }
 
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import * as d3 from "d3";
 import {Command} from "./App";
+import FileUpload from "./FileUpload";
+import File from "./File";
 
 class EditNode extends React.Component {
     constructor(props) {
@@ -12,11 +14,15 @@ class EditNode extends React.Component {
 
         this.updateContent = this.updateContent.bind(this);
         this.deleteNode = this.deleteNode.bind(this);
+        this.deleteFile = this.deleteFile.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
+        this.onPaste = this.onPaste.bind(this);
     }
 
     componentDidMount() {
-
+        if (this.props.selected) {
+            this.contentField.current.focus();
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -34,6 +40,16 @@ class EditNode extends React.Component {
         });
     }
 
+    onPaste(event) {
+        var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf("image") !== -1) {
+                this.props.onSendCommand(Command.UPDATE_FILE, {file: items[i].getAsFile(), node_id: this.props.node.id});
+                break;
+            }
+        }
+    }
+
     onKeyDown(e) {
         if (e.keyCode === 13) {
             e.preventDefault();
@@ -44,7 +60,7 @@ class EditNode extends React.Component {
                 this.props.shiftOut(this.props.node);
             else
                 this.props.shiftIn(this.props.node);
-        } else if (e.altKey ) {
+        } else if (e.altKey) {
             if (e.keyCode === 38) {
                 e.preventDefault();
                 this.props.selectNeighbour(this.props.node, -1);
@@ -65,19 +81,32 @@ class EditNode extends React.Component {
         this.props.onSendCommand(Command.DELETE, this.props.node.id);
     }
 
+    deleteFile() {
+        this.props.onSendCommand(Command.DELETE_FILE, this.props.node.id);
+    }
 
     render() {
         return (
-             <div className="edit-node">
-                 <div className={"content level-" + this.props.level}>
-                    <input onKeyDown={this.onKeyDown} ref={this.contentField} type="text" name="content" value={this.state.content} onChange={evt => this.updateContent(evt)} />
-                 </div>
+            <div className="edit-node">
+                <div className={"content level-" + this.props.level}>
+                    <input onPaste={this.onPaste} onKeyDown={this.onKeyDown} ref={this.contentField} type="text" name="content" value={this.state.content} onChange={evt => this.updateContent(evt)}/>
+                    {this.props.node.file ?
+                        <div>
+                            <File file={this.props.node.file}/>
+                            <div className="action" onClick={this.deleteFile} title="Delete file">
+                                <i className="fas fa-times"></i>
+                            </div>
+                        </div>
+                        :
+                        <FileUpload onSendCommand={this.props.onSendCommand} node_id={this.props.node.id}/>
+                    }
+                </div>
                 <div className="toolbar">
                     <div className="action" onClick={this.deleteNode} title="Delete node">
                         <i className="fas fa-trash-alt"></i>
                     </div>
                 </div>
-             </div>
+            </div>
         );
     }
 }

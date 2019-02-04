@@ -2,8 +2,9 @@ import React from 'react';
 import ReconnectingEventSource from "reconnecting-eventsource";
 import MindMap from "./MindMap";
 import EditBar from "./EditBar";
+import 'react-image-lightbox/style.css';
 
-export const Command = Object.freeze({"UPDATE":1, "DELETE":2, "CREATE":3, "MOVE":4, "LOAD":5});
+export const Command = Object.freeze({"UPDATE":1, "DELETE":2, "CREATE":3, "MOVE":4, "LOAD":5, "DELETE_FILE":6, "UPDATE_FILE":7});
 
 class App extends React.Component {
 
@@ -35,6 +36,7 @@ class App extends React.Component {
 
             if (newNodeData.id in nodes) {
                 nodes[newNodeData.id].content = newNodeData.content;
+                nodes[newNodeData.id].file = newNodeData.file;
 
                 for (const parent of nodes[newNodeData.id].parents) {
                     if (newNodeData.parents.findIndex(e => e.id === parent.id) === -1) {
@@ -124,7 +126,7 @@ class App extends React.Component {
             let node = args;
             data.append("data", JSON.stringify(node));
 
-            fetch("/update_node/" + node.id,
+            fetch("/update_content/" + node.id,
                 {
                     method: "POST",
                     body: data
@@ -138,6 +140,23 @@ class App extends React.Component {
 
                     }
                 );
+        } else if (command === Command.UPDATE_FILE) {
+            const formData = new FormData();
+            formData.append('file', args.file);
+
+            fetch("/update_file/" + args.node_id, {
+                method: 'POST',
+                body: formData
+            })
+            .then(
+                (result) => {
+                    if (callback !== null)
+                        callback(result);
+                },
+                (error) => {
+
+                }
+            );
         } else if (command === Command.CREATE) {
             fetch("/add_node/" + this.user_id + "/" + args.parent_id + "/" + args.sorting)
             .then(res => res.json())
@@ -152,6 +171,17 @@ class App extends React.Component {
             );
         } else if (command === Command.DELETE) {
             fetch("/delete_node/" + args)
+            .then(
+                (result) => {
+                    if (callback !== null)
+                        callback(result);
+                },
+                (error) => {
+
+                }
+            );
+        }  else if (command === Command.DELETE_FILE) {
+            fetch("/delete_file/" + args)
             .then(
                 (result) => {
                     if (callback !== null)
@@ -215,7 +245,7 @@ class App extends React.Component {
                             <MindMap nodes={this.state.nodes} onSendCommand={this.onSendCommand} focusedNode={this.state.focusedNode} focusNode={this.focusNode}/>
                         </div>
                         <div className="col-sm-4">
-                            <EditBar nodes={this.state.nodes} onSendCommand={this.onSendCommand} focusedNode={this.state.focusedNode}/>
+                            <EditBar nodes={this.state.nodes} onSendCommand={this.onSendCommand} focusedNode={this.state.focusedNode} focusNode={this.focusNode}/>
                         </div>
                     </div>
                 </div>

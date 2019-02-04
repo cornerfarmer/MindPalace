@@ -1,6 +1,7 @@
 from EventManager import EventType
 from Repository import Repository
 import uuid
+import os
 
 class Controller:
     def __init__(self, event_manager):
@@ -13,7 +14,7 @@ class Controller:
 
         self.watch_node(user_id, node_id)
 
-        self.watch_children(user_id, node_id, 2)
+        self.watch_children(user_id, node_id, 3)
         self.watch_parents(user_id, node_id, 2)
 
     def watch_children(self, user_id, node_id, max_level):
@@ -60,6 +61,15 @@ class Controller:
     def delete_node(self, node_id):
         self.repository.delete_node(node_id)
         self.event_manager.throw(EventType.NODE_DELETED, {"id": node_id})
+
+    def delete_file(self, node_id):
+        file = self.repository.get_node(node_id)["file"]
+        if file != "":
+            try:
+                os.remove("data/uploads/" + file[:file.find("/")])
+            except:
+                pass
+            self.update_node(node_id, {"file": ""})
 
     def move_node(self, node_id, old_parent, new_parent, sorting):
         self.repository.move_node(node_id, old_parent, new_parent)
