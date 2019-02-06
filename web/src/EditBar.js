@@ -35,7 +35,7 @@ class EditBar extends React.Component {
         if ((prevProps.nodes !== this.props.nodes || prevProps.focusedNode !== this.props.focusedNode) && this.props.focusedNode in this.props.nodes) {
             var nodeListing = [];
             const focusedNode = this.props.nodes[this.props.focusedNode];
-            this.addNodesRecursive(nodeListing, focusedNode, -1, 0, 2);
+            this.addNodesRecursive(nodeListing, focusedNode, -1, 0, 1);
 
             this.setState({
                 nodeListing: nodeListing
@@ -79,7 +79,7 @@ class EditBar extends React.Component {
         if (node.children.length > 0) {
             var element_index = this.state.nodeListing.findIndex(e => e.node === node.children[0].node);
             if (element_index === -1) {
-                this.props.focusNode(node.main_parent.id);
+                this.props.focusNode(node.id);
             }
             this.selectNode(node.children[0].node.id);
         }
@@ -107,8 +107,10 @@ class EditBar extends React.Component {
     shiftIn(node) {
         if (node.main_parent !== null) {
             var index = this.findNeighbour(node, -1);
-            if (index >= 0)
+            if (index >= 0) {
                 this.props.onSendCommand(Command.MOVE, {old_parent_id: node.main_parent.id, new_parent_id: this.state.nodeListing[index].node.id, node_id: node.id});
+                this.props.focusNode(this.state.nodeListing[index].node.id);
+            }
         }
     }
 
@@ -116,6 +118,7 @@ class EditBar extends React.Component {
         if (node.main_parent !== null && node.main_parent.main_parent !== null) {
             var child = node.main_parent.main_parent.children.find(e => e.node === node.main_parent);
             this.props.onSendCommand(Command.MOVE, {old_parent_id: node.main_parent.id, new_parent_id: node.main_parent.main_parent.id, node_id: node.id, sorting: child.sorting + 1});
+            this.props.focusNode(node.main_parent.main_parent.id);
         }
     }
 

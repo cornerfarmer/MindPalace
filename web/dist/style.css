@@ -8,13 +8,22 @@ body,
     height: 100%;
 }
 
-#root > #page > .container > .row > .col-sm-8 {
-    overflow: hidden;
-    padding-right: 0px;
+#root > #page > .container {
+    max-width: none;
+    padding: 0;
 }
 
-#root > #page > .container > .row > .col-sm-4 {
-    padding-left: 0px;
+#root > #page > .container > .row {
+    margin: 0;
+}
+
+#root > #page > .container > .row > .col-sm-9 {
+    overflow: hidden;
+    padding: 0;
+}
+
+#root > #page > .container > .row > .col-sm-3 {
+    padding: 0;
 }
 
 .mind-map,

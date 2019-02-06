@@ -241,10 +241,10 @@ class App extends React.Component {
             <div id="page">
                 <div className="container">
                     <div className="row">
-                        <div className="col-sm-8">
+                        <div className="col-sm-9">
                             <MindMap nodes={this.state.nodes} onSendCommand={this.onSendCommand} focusedNode={this.state.focusedNode} focusNode={this.focusNode}/>
                         </div>
-                        <div className="col-sm-4">
+                        <div className="col-sm-3">
                             <EditBar nodes={this.state.nodes} onSendCommand={this.onSendCommand} focusedNode={this.state.focusedNode} focusNode={this.focusNode}/>
                         </div>
                     </div>
