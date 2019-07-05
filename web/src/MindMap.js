@@ -76,6 +76,15 @@ class MindMap extends React.Component {
         return <MindMapNode node={node} enlarged_id={this.state.enlarged_id} enlarge={this.enlarge} />
     }
 
+    nodeClass(d) {
+        let className = "node ";
+        if (d.node.id === this.state.enlarged_id)
+            className += "node-enlarged ";
+        if (d.node.id === this.props.selectedNode)
+            className += "node-selected ";
+        return className;
+    }
+
     rebuildNodes() {
         var mapNodes = [];
         var mapConnections = [];
@@ -94,7 +103,7 @@ class MindMap extends React.Component {
         let self = this;
         nodeElements.exit().remove();
         nodeElements.enter().append("div")
-            .attr("class", d => (d.node.id === this.state.enlarged_id ? "node node-enlarged" : "node"))
+            .attr("class", d => this.nodeClass(d))
             .on("click", function(d) {
                 if (d3.event.target.nodeName === "DIV" || d3.event.target.nodeName === "SPAN")
                     self.props.focusNode(d.node.id);
@@ -102,16 +111,18 @@ class MindMap extends React.Component {
             .style("background", d => d.node.id === this.props.focusedNode ? "lightgrey" : "white")
             .style("left", d => d.x + "px")
             .style("top", d => d.y + "px")
+            .style("border-width", d => (d.node.children.length > 0 ? "2px" : "1px"))
             .append("div")
             .attr("id", d => "node-" + d.node.id);
 
         nodeElements
             .transition(t)
             .duration(500)
-            .attr("class", d => (d.node.id === this.state.enlarged_id ? "node node-enlarged" : "node"))
+            .attr("class", d => this.nodeClass(d))
             .style("background", d => d.node.id === this.props.focusedNode ? "lightgrey" : "white")
             .style("left", d => d.x + "px")
-            .style("top", d => d.y + "px");
+            .style("top", d => d.y + "px")
+            .style("border-width", d => (d.node.children.length > 0 ? "2px" : "1px"));
 
         for (const mapNode of mapNodes) {
             ReactDOM.render(this.renderNode(mapNode.node), document.getElementById('node-' + mapNode.node.id));

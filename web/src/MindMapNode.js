@@ -17,7 +17,7 @@ class MindMapNode extends React.Component {
                 {this.props.node.id === this.props.enlarged_id ? (
                     <span>{this.props.node.content}</span>
                     ) : (
-                    <span>{this.props.node.content.substr(0, 30)} {this.props.node.content.length > 30 && <a onClick={() => this.props.enlarge(this.props.node.id)}>More...</a>}</span>
+                    <span>{this.props.node.content.substr(0, 100)} {this.props.node.content.length > 100 && <a onClick={() => this.props.enlarge(this.props.node.id)}>More...</a>}</span>
                 )}
             </div>
         );

@@ -12,9 +12,11 @@ class App extends React.Component {
         super(props);
         this.state = {
             nodes: {},
-            focusedNode: "00000000-0000-0000-0000-000000000000"
+            focusedNode: "00000000-0000-0000-0000-000000000000",
+            selectedNode: "00000000-0000-0000-0000-000000000000"
         };
 
+        this.selectNode = this.selectNode.bind(this);
         this.onSendCommand = this.onSendCommand.bind(this);
         this.focusNode = this.focusNode.bind(this);
 
@@ -224,6 +226,12 @@ class App extends React.Component {
         }
     }
 
+     selectNode(node_id) {
+        this.setState({
+            selectedNode: node_id
+        });
+    }
+
     focusNode(node_id) {
         if (node_id in this.state.nodes) {
             if (!this.state.nodes[node_id].loaded) {
@@ -242,10 +250,10 @@ class App extends React.Component {
                 <div className="container">
                     <div className="row">
                         <div className="col-sm-9">
-                            <MindMap nodes={this.state.nodes} onSendCommand={this.onSendCommand} focusedNode={this.state.focusedNode} focusNode={this.focusNode}/>
+                            <MindMap nodes={this.state.nodes} onSendCommand={this.onSendCommand} focusedNode={this.state.focusedNode} focusNode={this.focusNode} selectedNode={this.state.selectedNode} selectNode={this.selectNode}/>
                         </div>
                         <div className="col-sm-3">
-                            <EditBar nodes={this.state.nodes} onSendCommand={this.onSendCommand} focusedNode={this.state.focusedNode} focusNode={this.focusNode}/>
+                            <EditBar nodes={this.state.nodes} onSendCommand={this.onSendCommand} focusedNode={this.state.focusedNode} focusNode={this.focusNode} selectedNode={this.state.selectedNode} selectNode={this.selectNode}/>
                         </div>
                     </div>
                 </div>

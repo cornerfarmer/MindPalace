@@ -6,6 +6,7 @@ body,
 #root > #page > .container >.row,
 #root > #page > .container >.row > div {
     height: 100%;
+    overflow: hidden;
 }
 
 #root > #page > .container {
@@ -48,12 +49,17 @@ body,
     background: white;
     cursor: pointer;
     max-width: 150px;
+    font-size: 14px;
 }
 
 
 .mind-map .nodes .node.node-enlarged {
     max-width: 300px;
     z-index: 10;
+}
+
+.mind-map .nodes .node.node-selected {
+    border-color: orange;
 }
 
 .mind-map .nodes .node a {
